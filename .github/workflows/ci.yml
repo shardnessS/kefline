@@ -1,0 +1,24 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      # Упражнения недели 0 не проверяем: в них заглушки, пока их не решили.
+      - name: packages
+        run: echo "PKGS=$(go list ./... | grep -v /learn/ | tr '\n' ' ')" >> "$GITHUB_ENV"
+      - name: vet
+        if: env.PKGS != ''
+        run: go vet $PKGS
+      - name: test
+        if: env.PKGS != ''
+        run: go test -race $PKGS
